@@ -17,6 +17,28 @@ The project developped here does not use the serial port: it pilots directly the
 
 Now that you know you can die in these operations, lets go deeper in technical details... :)
 
+## Examples of results
+![alt text](https://github.com/dubicube/minitel2.0/blob/main/pics/minitel_eirbot.jpg?raw=true)
+
+## Road map
+Done:
+- Firmware design to draw graphics from the ARM A9 processors
+
+To do:
+- Firmware design to get inputs from the keyboard
+- Firmware design to support text drawing (to decrease A9 processors computing load)
+- Software based on a linux kernel with full IP stack (using RJ45 port on the board), running on the A9 processors
+- Mechanics to integrate the Zynq board in the minitel case (3D printed parts)
+- Hardware to power the Zynq board from the minitel power supplies
+- Hardware and firmware to support RF communication with some 433MHz transmitter and receiver
+
+Ideas maybe developped in the future:
+- Hardware to support grey levels (instead of just black or white pixels)
+- Hardware for an audio output (and why not an input too ? With some custom digital filters in programmable logic... Lets be crazy ^^)
+- Firmware design to use the HDMi port of the board as an output
+- Firmware design to use the HDMi port of the board as an input (to use the minitel screen as a regular computer screen)
+- Firmware and hardware design to map the minitel keyboard to an USB interface (to use the keyboard as a regular computer keyboard)
+
 ## Hardware architecture of the minitel
 To understand how to disassemble a minitel, this web page can be usefull:
 [https://www.cfp-radio.com/realisations/rea48/minitel-01.html](https://www.cfp-radio.com/realisations/rea48/minitel-01.html "https://www.cfp-radio.com/realisations/rea48/minitel-01.html")
