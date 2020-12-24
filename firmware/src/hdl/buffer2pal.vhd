@@ -21,6 +21,10 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity buffer2pal is
+generic (
+   g_INVERT_SYNC : std_logic := '1'; -- '1' to invert SYNC_OUT, else '0' to not invert
+   g_INVERT_DATA : std_logic := '0'  -- '1' to invert VIDEO_DATA, else '0' to not invert
+);
 Port (
    CLK : in std_logic;
 
@@ -77,7 +81,11 @@ begin
    --|=======================================================================|--
    process(CLK) begin
       if rising_edge(CLK) then
-         SYNC_OUT <= not SYNC_IN;
+         if (g_INVERT_SYNC = '1') then
+            SYNC_OUT <= not SYNC_IN;
+         else
+            SYNC_OUT <= SYNC_IN;
+         end if;
       end if;
    end process;
 
@@ -103,7 +111,11 @@ begin
             BUFFER_EN <= '0';
          end if;
          if (POSX(1 downto 0) = "10") then
-            s_VIDEO_DATA <= BUFFER_DIN(to_integer(unsigned(POSX(6 downto 2))));
+            if (g_INVERT_DATA = '0') then
+               s_VIDEO_DATA <= BUFFER_DIN(to_integer(unsigned(POSX(6 downto 2))));
+            else
+               s_VIDEO_DATA <= not BUFFER_DIN(to_integer(unsigned(POSX(6 downto 2))));
+            end if;
          end if;
       end if;
    end process;
