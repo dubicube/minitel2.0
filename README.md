@@ -8,10 +8,14 @@ This project is based on a minitel 1b, sold in France a few decades ago. More in
 
 This project uses a Zynq board to display fully custom graphics on the screen, and to capture the keyboard inputs.
 
+The main goal of this project is to build a modern computing system hidden behind an old minitel to control multiple connected objects for domotic applications.
+
 ## Project scope
 Many people on the internet have already used such a minitel directly with the serial port available at the back of the product. This solution has the benefit to not change any hardware. But it is limited by the graphical processor controlling the screen inside. Practically, using the serial port only allows to control the screen in character mode (As I understand it from what I have read).
 
-The project developped here does not use the serial port: it pilots directly the screen by sending it analog video signals. This solution has the benefit to completly control the screen to draw fully custom graphics. However, to use this solution, we need to modify the hardware of the minitel by removing a board.
+Thus, some people have directly used the screen and keyboard signals with custom hardware to avoid limitations of the minitel computation speed, [typically with a Raspberry Pi](https://wiki.labomedia.org/index.php/Renaissance_d'un_Minitel_avec_une_Raspberry_Pi "typically with a Raspberry Pi").
+
+The project developped here controls the screen and the keyboard of the minitel with a Zynq system on chip. This solution has the benefits to use programmable logic to develop custom hardware controllers while having 2 processors ARM cortex A9 to execute some software.
 
 **WARNING:** Be sure to have unplugged the minitel before dismantling it and/or modifying its hardware. The electronics inside generates high voltage to control the cathode ray tube. Exposing yourself at these high voltage can be dangerous. I disclaim all responsabilities for eventual injurries during such manipulations.
 
@@ -90,3 +94,15 @@ The SYNC and VID signals produced in the XC7Z010 chip are routed to some 3V3 I/O
 The 74hc00 is a quad 2 inputs nand gates. I connected 2 gates to the XC7Z010 chip (connecting together the 2 inputs of each gate). This hardware produced external inverters converting 3V3 signals to 5V signals (I also added inverters in the XC7Z010 by adding inverters in the design description to respect the signal polarity).
 
 This circuit also isolates the XC7Z010 from the minitel board: if there are some undesired current returns, the XC7Z010 is not directly damaged.
+
+To actually creates a real analog signal (to create grey shades on the screen), a simple R-2R ladder could be used or even a proper digital to analog converter. A board with such components might be developped in the future.
+
+## The keyboard
+### How it works
+The keyboard of the minitel is composed of 64 keys mapped in a wire matrix of 8x8 signals.
+[![](https://wiki.labomedia.org/images/thumb/1/13/Minitel1Clavier.jpg/400px-Minitel1Clavier.jpg)](https://wiki.labomedia.org/images/thumb/1/13/Minitel1Clavier.jpg/400px-Minitel1Clavier.jpg)
+
+From these 16 wires, there are 2 groups of 8 wires. Pressing a key creates a contact between a wire of a group and a wire of the other group. By sweeping different voltages over the 8 wires of a group, and looking at the voltages we get on the ohter group, we can deduce which keys are currently pressed.
+This works very well with up to 2 keys pressed simultaneously. But with 3 keys, there are many cases impossible to figure out which keys are pressed (with the stupid detection method described here).
+
+[This website](https://wiki.labomedia.org/index.php/Renaissance_d'un_Minitel_avec_une_Raspberry_Pi "This website") allowed to quickly get the corresponding matrix between wires and actual keys.
