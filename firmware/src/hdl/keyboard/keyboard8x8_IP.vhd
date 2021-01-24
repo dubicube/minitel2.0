@@ -21,6 +21,8 @@ entity keyboard8x8_IP is
 	generic (
 		-- Users to add parameters here
 
+      C_FIFO_DEPTH : integer	:= 8;
+
 		-- User parameters ends
 		-- Do not modify the parameters beyond this line
 
@@ -35,6 +37,9 @@ entity keyboard8x8_IP is
       -- Keyboard connection
       OUTPUTK : out std_logic_vector(7 downto 0);
       INPUTK  : in  std_logic_vector(7 downto 0);
+
+      -- Char output
+      FIFO_ITR : out std_logic;
 
 		-- User ports ends
 		-- Do not modify the ports beyond this line
@@ -106,14 +111,36 @@ architecture arch_imp of keyboard8x8_IP is
 
    component keyboard8x8
    port (
-      CLK     : in  std_logic;
-      KEY_REG : out std_logic_vector(63 downto 0);
-      OUTPUTK : out std_logic_vector(7 downto 0);
-      INPUTK  : in  std_logic_vector(7 downto 0)
+      CLK        : in  std_logic;
+      KEY_UPDATE : out std_logic;
+      KEY_REG    : out std_logic_vector(63 downto 0);
+      OUTPUTK    : out std_logic_vector(7 downto 0);
+      INPUTK     : in  std_logic_vector(7 downto 0)
    );
    end component keyboard8x8;
+   signal KEY_UPDATE : std_logic;
    signal KEY_REG : std_logic_vector(63 downto 0);
 
+   component ascii_converter
+   port (
+      CLK        : in  std_logic;
+      KEY_UPDATE : in  std_logic;
+      KEY_REG    : in  std_logic_vector(63 downto 0);
+      CHAR_VALID : out std_logic;
+      CHAR_DATA  : out std_logic_vector(7 downto 0)
+   );
+   end component ascii_converter;
+   signal CHAR_VALID : std_logic;
+   signal CHAR_DATA  : std_logic_vector(7 downto 0);
+
+
+   type t_MEMORY_8 is array (0 to C_FIFO_DEPTH-1) of std_logic_vector(7 downto 0);
+   signal s_char_fifo  : t_MEMORY_8;
+   signal s_fifo_rp    : integer range 0 to C_FIFO_DEPTH-1 := 0;
+   signal s_fifo_wp    : integer range 0 to C_FIFO_DEPTH-1 := 0;
+   signal s_fifo_full  : std_logic;
+   signal s_fifo_empty : std_logic;
+   signal s_fifo_read  : std_logic;
 
 	-- AXI4LITE signals
 	signal axi_awaddr  : std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
@@ -246,7 +273,7 @@ begin
 	    if S_AXI_ARESETN = '0' then
 	      -- slv_reg0 <= (others => '0');
 	      -- slv_reg1 <= (others => '0');
-	      slv_reg2 <= (others => '0');
+	      --slv_reg2 <= (others => '0');
 	      slv_reg3 <= (others => '0');
 	    else
 	      loc_addr := axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
@@ -269,13 +296,13 @@ begin
 	            --   end if;
 	            -- end loop;
 	          when b"10" =>
-	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
-	                -- Respective byte enables are asserted as per write strobes
-	                -- slave registor 2
-	                slv_reg2(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-	              end if;
-	            end loop;
+	            -- for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
+	            --   if ( S_AXI_WSTRB(byte_index) = '1' ) then
+	            --     -- Respective byte enables are asserted as per write strobes
+	            --     -- slave registor 2
+	            --     slv_reg2(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+	            --   end if;
+	            -- end loop;
 	          when b"11" =>
 	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
@@ -287,7 +314,7 @@ begin
 	          when others =>
 	            -- slv_reg0 <= slv_reg0;
 	            -- slv_reg1 <= slv_reg1;
-	            slv_reg2 <= slv_reg2;
+	            -- slv_reg2 <= slv_reg2;
 	            slv_reg3 <= slv_reg3;
 	        end case;
 	      end if;
@@ -418,14 +445,53 @@ begin
 
    keyboard8x8_i : keyboard8x8
    port map (
-      CLK     => S_AXI_ACLK,
-      KEY_REG => KEY_REG,
-      OUTPUTK => OUTPUTK,
-      INPUTK  => INPUTK
+      CLK        => S_AXI_ACLK,
+      KEY_UPDATE => KEY_UPDATE,
+      KEY_REG    => KEY_REG,
+      OUTPUTK    => OUTPUTK,
+      INPUTK     => INPUTK
+   );
+
+   ascii_converter_i : ascii_converter
+   port map (
+      CLK        => S_AXI_ACLK,
+      KEY_UPDATE => KEY_UPDATE,
+      KEY_REG    => KEY_REG,
+      CHAR_VALID => CHAR_VALID,
+      CHAR_DATA  => CHAR_DATA
    );
 
    slv_reg0 <= KEY_REG(31 downto 0);
    slv_reg1 <= KEY_REG(63 downto 32);
+
+   --|=======================================================================|--
+   --| Char FIFO
+   --|=======================================================================|--
+
+   s_fifo_read <= '1' when S_AXI_ARESETN = '1' and slv_reg_rden = '1'
+   and axi_araddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB) = b"10" else '0';
+
+   process(S_AXI_ACLK) is
+   begin
+      if (rising_edge(S_AXI_ACLK)) then
+         if ( S_AXI_ARESETN = '0' ) then
+            s_fifo_rp <= 0;
+            s_fifo_wp <= 0;
+         elsif (s_fifo_full = '0' and CHAR_VALID = '1') then
+            s_fifo_wp <= s_fifo_wp + 1;
+            s_char_fifo(s_fifo_wp) <= CHAR_DATA;
+         elsif (s_fifo_empty = '0' and s_fifo_read = '1') then
+            s_fifo_rp <= s_fifo_rp + 1;
+         end if;
+
+         FIFO_ITR <= not CHAR_VALID;
+      end if;
+   end process;
+
+   s_fifo_full  <= '1' when s_fifo_rp = s_fifo_wp+1 else '0';
+   s_fifo_empty <= '1' when s_fifo_rp = s_fifo_wp else '0';
+
+   slv_reg2 <= x"00000" & "00" & s_fifo_full & s_fifo_empty & s_char_fifo(s_fifo_rp);
 
 	-- User logic ends
 

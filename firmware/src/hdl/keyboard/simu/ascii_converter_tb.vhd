@@ -5,11 +5,11 @@
 --| |____/ |___||___||_||_|  |___||___||_|_|                                 |--
 --|                                                                          |--
 --|==========================================================================|--
---| Module name: keyboard8x8_tb                                              |--
---| Description: Testbench for module keyboard8x8                            |--
+--| Module name: ascii_converter_tb                                          |--
+--| Description: Testbench for module ascii_converter                        |--
 --|                                                                          |--
 --|==========================================================================|--
---| 28/12/2020 | Creation                                                    |--
+--| 24/01/2021 | Creation                                                    |--
 --|            |                                                             |--
 --|==========================================================================|--
 
@@ -20,61 +20,74 @@ use IEEE.NUMERIC_STD.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity keyboard8x8_tb is
-end keyboard8x8_tb;
+entity ascii_converter_tb is
+end ascii_converter_tb;
 
-architecture Behavioral of keyboard8x8_tb is
+architecture Behavioral of ascii_converter_tb is
    --|=======================================================================|--
    --| External entities
    --|=======================================================================|--
-   component keyboard8x8
+   component ascii_converter
    port (
       CLK        : in  std_logic;
-      KEY_UPDATE : out std_logic;
-      KEY_REG    : out std_logic_vector(63 downto 0);
-      OUTPUTK    : out std_logic_vector(7 downto 0);
-      INPUTK     : in  std_logic_vector(7 downto 0)
+      KEY_UPDATE : in  std_logic;
+      KEY_REG    : in  std_logic_vector(63 downto 0);
+      CHAR_VALID : out std_logic;
+      CHAR_DATA  : out std_logic_vector(7 downto 0)
    );
-   end component keyboard8x8;
-   --signal CLK     : std_logic;
-   signal KEY_UPDATE : std_logic;
-   signal KEY_REG    : std_logic_vector(63 downto 0);
-   signal OUTPUTK    : std_logic_vector(7 downto 0);
-   signal INPUTK     : std_logic_vector(7 downto 0);
+   end component ascii_converter;
 
    --|=======================================================================|--
    --| Internal signals
    --|=======================================================================|--
+   --signal CLK        : std_logic;
+   signal KEY_UPDATE : std_logic;
+   signal KEY_REG    : std_logic_vector(63 downto 0);
+   signal CHAR_VALID : std_logic;
+   signal CHAR_DATA  : std_logic_vector(7 downto 0);
 
-   signal s_INPUTK  : std_logic_vector(7 downto 0);
 
    constant c_CLK_PERIOD : time := 10000 ps;
 
    signal CLK : std_logic;
 
 begin
-   keyboard8x8_i : keyboard8x8
+
+   ascii_converter_i : ascii_converter
    port map (
       CLK        => CLK,
       KEY_UPDATE => KEY_UPDATE,
       KEY_REG    => KEY_REG,
-      OUTPUTK    => OUTPUTK,
-      INPUTK     => INPUTK
+      CHAR_VALID => CHAR_VALID,
+      CHAR_DATA  => CHAR_DATA
    );
 
-   s_INPUTK <= (others => 'H'); -- Weak pull up
-
-   s_INPUTK(0) <= OUTPUTK(0);
-
-   GEN_OUT : for I in 0 to 7 generate
-      INPUTK(I) <= '0' when s_INPUTK(I)='0' else '1';
-   end generate GEN_OUT;
-   -- Nice
 
    --|=======================================================================|--
    --| Process description
    --|=======================================================================|--
    process begin
+      KEY_UPDATE <= '0';
+      KEY_REG <= x"FFFFFFFFFFFFFFFF";
+      wait for 10 us;
+
+      KEY_UPDATE <= '1';
+      KEY_REG <= x"FFFFFFFFFFFFFFFE";
+      wait for c_CLK_PERIOD;
+      KEY_UPDATE <= '0';
+      wait for 10 us;
+
+      KEY_UPDATE <= '1';
+      KEY_REG <= x"FFFFFFFFFFFFFFFE";
+      wait for c_CLK_PERIOD;
+      KEY_UPDATE <= '0';
+      wait for 10 us;
+
+      KEY_UPDATE <= '1';
+      KEY_REG <= x"FFFFFFFFFFEFFFFF";
+      wait for c_CLK_PERIOD;
+      KEY_UPDATE <= '0';
+      wait for 10 us;
       wait;
    end process;
 

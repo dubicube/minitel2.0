@@ -25,7 +25,8 @@ Port (
    CLK : in std_logic;
 
    -- Key states output
-   KEY_REG : out std_logic_vector(63 downto 0);
+   KEY_UPDATE : out std_logic; -- Pulse when the matrix is swept
+   KEY_REG    : out std_logic_vector(63 downto 0);
 
    -- Keyboard connection
    OUTPUTK : out std_logic_vector(7 downto 0);
@@ -118,6 +119,20 @@ begin
          end process;
       end generate GEN_REGJ;
    end generate GEN_REGI;
+
+   --|=======================================================================|--
+   --| Key update output
+   --|=======================================================================|--
+   process(CLK) begin
+      if rising_edge(CLK) then
+         -- if (s_step_update='1' and s_key_counters(7)=255 and s_step_i=7) then
+         --    KEY_UPDATE <= '1';
+         -- else
+         --    KEY_UPDATE <= '0';
+         -- end if;
+         KEY_UPDATE <= s_step_update;
+      end if;
+   end process;
 
    --|=======================================================================|--
    --| Output keyboard matrix
