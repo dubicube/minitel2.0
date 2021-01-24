@@ -27,9 +27,9 @@ Now that you know you can die in these operations, lets go deeper in technical d
 ## Road map
 Done:
 - Firmware design to draw graphics from the ARM A9 processors
+- Firmware design to get inputs from the keyboard
 
 To do:
-- Firmware design to get inputs from the keyboard
 - Firmware design to support text drawing (to decrease A9 processors computing load)
 - Software based on a linux kernel with full IP stack (using RJ45 port on the board), running on the A9 processors
 - Mechanics to integrate the Zynq board in the minitel case (3D printed parts)
