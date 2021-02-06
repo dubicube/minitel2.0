@@ -10,6 +10,7 @@
 --|                                                                          |--
 --|==========================================================================|--
 --| 20/12/2020 | Creation                                                    |--
+--| 06/02/2021 | Converted from 768x574 to 768x512 to easily draw characters |--
 --|            |                                                             |--
 --|==========================================================================|--
 
@@ -67,9 +68,6 @@ architecture Behavioral of buffer2pal is
    --| Internal signals
    --|=======================================================================|--
 
-   signal s_posx_u : unsigned(11 downto 0);
-   signal s_posy_u : unsigned(9  downto 0);
-
    signal s_pixel_enable : std_logic;
 
    signal s_VIDEO_DATA : std_logic;
@@ -96,25 +94,22 @@ begin
    BUFFER_WE   <= (others => '0');
    BUFFER_DOUT <= (others => '0');
 
-   s_posx_u <= unsigned(POSX);
-   s_posy_u <= unsigned(POSY);
-
    --|=======================================================================|--
    --| Buffer to video data
    --|=======================================================================|--
    process(CLK) begin
       if rising_edge(CLK) then
+         BUFFER_ADDR <= x"0000" & POSX(11 downto 2) & POSY(8 downto 5) & "00";
          if (POSX(1 downto 0) = "00") then
-            BUFFER_ADDR <= std_logic_vector(resize(3*(s_posy_u&"000"), 30) + s_posx_u(s_posx_u'left downto 7)) & "00";
             BUFFER_EN   <= '1';
          else
             BUFFER_EN <= '0';
          end if;
          if (POSX(1 downto 0) = "10") then
             if (g_INVERT_DATA = '0') then
-               s_VIDEO_DATA <= BUFFER_DIN(to_integer(unsigned(POSX(6 downto 2))));
+               s_VIDEO_DATA <= BUFFER_DIN(to_integer(unsigned(POSY(4 downto 0))));
             else
-               s_VIDEO_DATA <= not BUFFER_DIN(to_integer(unsigned(POSX(6 downto 2))));
+               s_VIDEO_DATA <= not BUFFER_DIN(to_integer(unsigned(POSY(4 downto 0))));
             end if;
          end if;
       end if;

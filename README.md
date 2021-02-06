@@ -28,16 +28,16 @@ Now that you know you can die in these operations, lets go deeper in technical d
 Done:
 - Firmware design to draw graphics from the ARM A9 processors
 - Firmware design to get inputs from the keyboard
+- Firmware design to support text drawing (to decrease A9 processors computing load)
 
 To do:
-- Firmware design to support text drawing (to decrease A9 processors computing load)
-- Software based on a linux kernel with full IP stack (using RJ45 port on the board), running on the A9 processors
+- Software based on a linux kernel with full IP stack (using RJ45 port on the board), running on the A9 processors. Or maybe just a FreeRTOS...
 - Mechanics to integrate the Zynq board in the minitel case (3D printed parts)
 - Hardware to power the Zynq board from the minitel power supplies
-- Hardware and firmware to support RF communication with some 433MHz transmitter and receiver
+- Hardware and firmware to support 433MHz and bluetooth communication
 
 Ideas maybe developped in the future:
-- Hardware to support grey levels (instead of just black or white pixels)
+- Hardware to support grey levels instead of just black or white pixels. But BRAM usage will be a problem if still using a xc7z010 chip.
 - Hardware for an audio output (and why not an input too ? With some custom digital filters in programmable logic... Lets be crazy ^^)
 - Firmware design to use the HDMi port of the board as an output
 - Firmware design to use the HDMi port of the board as an input (to use the minitel screen as a regular computer screen)

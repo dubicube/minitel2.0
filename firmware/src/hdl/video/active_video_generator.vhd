@@ -10,6 +10,7 @@
 --|                                                                          |--
 --|==========================================================================|--
 --| 20/12/2020 | Creation                                                    |--
+--| 06/02/2021 | Converted from 768x574 to 768x512 to easily draw characters |--
 --|            |                                                             |--
 --|==========================================================================|--
 
@@ -43,10 +44,10 @@ architecture Behavioral of active_video_generator is
 
    constant c_START_X  : unsigned(11 downto 0) := to_unsigned(646, 12); -- Included
    constant c_END_X    : unsigned(11 downto 0) := to_unsigned(3718, 12); -- Not included
-   constant c_START_Y1 : unsigned(9  downto 0) := to_unsigned(23, 10); -- Included
-   constant c_END_Y1   : unsigned(9  downto 0) := to_unsigned(310, 10); -- Not included
-   constant c_START_Y2 : unsigned(9  downto 0) := to_unsigned(335, 10); -- Included
-   constant c_END_Y2   : unsigned(9  downto 0) := to_unsigned(622, 10); -- Not included
+   constant c_START_Y1 : unsigned(9  downto 0) := to_unsigned(37, 10); -- Included
+   constant c_END_Y1   : unsigned(9  downto 0) := to_unsigned(293, 10); -- Not included
+   constant c_START_Y2 : unsigned(9  downto 0) := to_unsigned(350, 10); -- Included
+   constant c_END_Y2   : unsigned(9  downto 0) := to_unsigned(606, 10); -- Not included
 
    --|=======================================================================|--
    --| Internal signals

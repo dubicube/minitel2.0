@@ -9,17 +9,17 @@
 --| Description: This module generates a video output from pixels in a BRAM. |--
 --|                                                                          |--
 --| The BRAM interface is intended to be connected to a shared RAM with PS.  |--
---| The RAM should contains at least 13776 32-bit words (768x574 pixels).    |--
+--| The RAM should contains at least 12288 32-bit words (768x512 pixels).    |--
 --| The module has write signals for the BRAM but never actually writes data.|--
 --| BUFFER_ADDR address the RAM in byte unit, but access are always          |--
 --| multiples of 4 (to addresse 32-bit words)                                |--
 --|                                                                          |--
 --| The external RAM stores pixels of the frame.                             |--
 --| Each pixel is stored with 1 bit.                                         |--
---| A line is composed of 768 pixels, thus 24 32-bit words.                  |--
---| There are 574 lines.                                                     |--
---| So, the first pixels of line 0 are at offset 0 (in bytes), the first     |--
---| pixels of line 1 are at offset 24 (in bytes), and so on.                 |--
+--| Pixels are stored in the vertical way within 32 bit words                |--
+--| 16 32-bit-words represent 1 pixel row                                    |--
+--| There are 768 rows composed of 512 pixels                                |--
+--|                                                                          |--
 --|                                                                          |--
 --| CLK frequency must be 60MHz                                              |--
 --|                                                                          |--
@@ -27,6 +27,7 @@
 --|                                                                          |--
 --|==========================================================================|--
 --| 23/12/2020 | Creation                                                    |--
+--| 06/02/2021 | Converted from 768x574 to 768x512 to easily draw characters |--
 --|            |                                                             |--
 --|==========================================================================|--
 
