@@ -10,6 +10,8 @@ This project uses a Zynq board to display fully custom graphics on the screen, a
 
 The main goal of this project is to build a modern computing system hidden behind an old minitel to control multiple connected objects for domotic applications.
 
+If you have any questions about the project, feel free to ask them. I'll be happy to answer :)
+
 ## Project scope
 Many people on the internet have already used such a minitel directly with the serial port available at the back of the product. This solution has the benefit to not change any hardware. But it is limited by the graphical processor controlling the screen inside. Practically, using the serial port only allows to control the screen in character mode (As I understand it from what I have read).
 
@@ -67,7 +69,7 @@ The board below the cathode ray tube performs all the digital functions:
 The board is pretty impressive, as complete data and address buses are wired between the microcontroller, the graphical processor and the RAM memory. But it is exactly the board we need to remove.
 
 ## Hardware used in project
-This project replaces the digital board of the minitel with a board based on a Zynq system on chip from Xilinx. This SoC allows to develop custom programmable logic to control the screen and the keyboard, while having 2 processors ARM cortex A9 to execute some software. The board used has been bought from a chinese vendor named QMTECH. Reference here: [http://www.chinaqmtech.com/xilinx_zynq_soc](http://www.chinaqmtech.com/xilinx_zynq_soc "http://www.chinaqmtech.com/xilinx_zynq_soc"). The board used is the square one with the XC7Z010 chip, bought for 42€ on Aliexpress. It seems the board is not well decoupled, but I never had issues with that.
+This project replaces the digital board of the minitel with a board based on a Zynq system on chip from Xilinx. This SoC allows to develop custom programmable logic to control the screen and the keyboard, while having 2 processors ARM cortex A9 to execute some software. The board used has been bought from a chinese vendor named QMTECH. Reference here: [http://www.chinaqmtech.com/xilinx_zynq_soc](http://www.chinaqmtech.com/xilinx_zynq_soc "http://www.chinaqmtech.com/xilinx_zynq_soc") (It seems the website is down. I still have the schematic as pdf. Maybe I will add it to the repo.). The board used is the square one with the XC7Z010 chip, bought for 42€ on Aliexpress. It seems the board is not well decoupled, but I never had issues with that.
 ![The board used](http://nwzimg.wezhan.hk/contents/sitefiles3604/18020567/images/2758872.jpg "The board used")
 
 However, the main sources of this project are independant of the hardware chip, so the user can easily adapt them for another board.
@@ -106,3 +108,7 @@ From these 16 wires, there are 2 groups of 8 wires. Pressing a key creates a con
 This works very well with up to 2 keys pressed simultaneously. But with 3 keys, there are many cases impossible to figure out which keys are pressed (with the stupid detection method described here).
 
 [This website](https://wiki.labomedia.org/index.php/Renaissance_d'un_Minitel_avec_une_Raspberry_Pi "This website") allowed to quickly get the corresponding matrix between wires and actual keys.
+
+## Software
+Software included in this repo is only for test purpose.
+A more complete software application using this hardware is available in an other repository.
