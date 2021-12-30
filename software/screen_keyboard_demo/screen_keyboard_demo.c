@@ -1,49 +1,22 @@
-/******************************************************************************
-*
-* Copyright (C) 2009 - 2014 Xilinx, Inc.  All rights reserved.
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in
-* all copies or substantial portions of the Software.
-*
-* Use of the Software is limited solely to applications:
-* (a) running on a Xilinx device, or
-* (b) that interact with a Xilinx device through a bus or interconnect.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-* XILINX  BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-* WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
-* OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
-*
-* Except as contained in this notice, the name of the Xilinx shall not be used
-* in advertising or otherwise to promote the sale, use or other dealings in
-* this Software without prior written authorization from Xilinx.
-*
-******************************************************************************/
+/*|==========================================================================|*/
+/*|  ____        _    _  _              _                                    |*/
+/*| |    \  _ _ | |_ |_|| |_  ___  ___ | |_                                  |*/
+/*| |  |  || | || . || ||  _|| -_||  _||   |                                 |*/
+/*| |____/ |___||___||_||_|  |___||___||_|_|                                 |*/
+/*|                                                                          |*/
+/*|==========================================================================|*/
+/*| File name: screen_keyboard_demo.c                                        |*/
+/*|                                                                          |*/
+/*| Description: This is an example to show how to draw in screen buffer,    |*/
+/*| as well as how to get inputs from keyboard.                              |*/
+/*|                                                                          |*/
+/*|                                                                          |*/
+/*|==========================================================================|*/
+/*| 24/12/2021 | Creation                                                    |*/
+/*|            |                                                             |*/
+/*|==========================================================================|*/
 
-/*
- * helloworld.c: simple test application
- *
- * This application configures UART 16550 to baud rate 9600.
- * PS7 UART (Zynq) is not initialized by this application, since
- * bootrom/bsp configures it to baud rate 115200
- *
- * ------------------------------------------------
- * | UART TYPE   BAUD RATE                        |
- * ------------------------------------------------
- *   uartns550   9600
- *   uartlite    Configurable only in HW design
- *   ps7_uart    115200 (configured by bootrom/bsp)
- */
+
 
 #include <stdio.h>
 #include "platform.h"
@@ -53,9 +26,6 @@
 #include "sleep.h"
 
 #include "xparameters.h"
-
-
-
 
 
 #include "xscugic.h"
@@ -74,13 +44,6 @@ static XScuGic gic;
 
 
 
-
-
-
-
-
-
-
 #define SCREEN_BASE_ADDR XPAR_BRAM_0_BASEADDR
 #define KEYBOARD_BASE_ADDR XPAR_KEYBOARD8X8_IP_0_BASEADDR
 #define SCREENCHAR_BASE_ADDR XPAR_CHAR_DRAWER_IP_0_BASEADDR
@@ -90,49 +53,48 @@ static XScuGic gic;
 #define SCREEN_HEIGHT 512
 
 //void drawPixel(int x, int y, int value) {
-//	u32 v = Xil_In32(SCREEN_BASE_ADDR + (y*24+(x>>5))*4);
-//	v = v&(~(1<<(x&0x1F)));
-//	v = v | ((value&1)<<(x&0x1F));
-//	Xil_Out32(SCREEN_BASE_ADDR + (y*24+(x>>5))*4, v);
+//    u32 v = Xil_In32(SCREEN_BASE_ADDR + (y*24+(x>>5))*4);
+//    v = v&(~(1<<(x&0x1F)));
+//    v = v | ((value&1)<<(x&0x1F));
+//    Xil_Out32(SCREEN_BASE_ADDR + (y*24+(x>>5))*4, v);
 //}
 void drawPixel(int x, int y, int value) {
-	u32 v = Xil_In32(SCREEN_BASE_ADDR | (((x<<4)|(y>>5))<<2));
-	v = v&(~(1<<(y&0x1F)));
-	v = v | ((value&1)<<(y&0x1F));
-	Xil_Out32(SCREEN_BASE_ADDR | (((x<<4)|(y>>5))<<2), v);
+    u32 v = Xil_In32(SCREEN_BASE_ADDR | (((x<<4)|(y>>5))<<2));
+    v = v&(~(1<<(y&0x1F)));
+    v = v | ((value&1)<<(y&0x1F));
+    Xil_Out32(SCREEN_BASE_ADDR | (((x<<4)|(y>>5))<<2), v);
 }
 
 void drawFullRect(int x0, int y0, int x1, int y1, int value) {
-	for (int y = y0; y < y1; y++) {
-		for (int x = x0; x < x1; x++) {
-			drawPixel(x, y, value);
-		}
-	}
+    for (int y = y0; y < y1; y++) {
+        for (int x = x0; x < x1; x++) {
+            drawPixel(x, y, value);
+        }
+    }
 }
 void drawRect(int x0, int y0, int x1, int y1, int value) {
-	for (int y = y0; y < y1; y++) {
-		drawPixel(x0, y, value);
-		drawPixel(x1-1, y, value);
-	}
-	for (int x = x0; x < x1; x++) {
-		drawPixel(x, y0, value);
-		drawPixel(x, y1-1, value);
-	}
+    for (int y = y0; y < y1; y++) {
+        drawPixel(x0, y, value);
+        drawPixel(x1-1, y, value);
+    }
+    for (int x = x0; x < x1; x++) {
+        drawPixel(x, y0, value);
+        drawPixel(x, y1-1, value);
+    }
 }
 
 void drawChar(u8 c) {
-	Xil_Out32(SCREENCHAR_BASE_ADDR, c);
+    Xil_Out32(SCREENCHAR_BASE_ADDR, c);
 }
 
 u64 getKeyBoard() {
-	u64 v = Xil_In32(KEYBOARD_BASE_ADDR);
-	v |= ((u64)Xil_In32(KEYBOARD_BASE_ADDR + 4))<<32;
-	return v;
+    u64 v = Xil_In32(KEYBOARD_BASE_ADDR);
+    v |= ((u64)Xil_In32(KEYBOARD_BASE_ADDR + 4))<<32;
+    return v;
 }
 u32 getChar() {
-	return Xil_In32(KEYBOARD_BASE_ADDR + 8);
+    return Xil_In32(KEYBOARD_BASE_ADDR + 8);
 }
-
 
 // This example allows to move a rectangle on the screen using the arrow keys
 // It also outputs keyboard inputs to the uart
@@ -144,70 +106,70 @@ int main() {
 
 
 //    int status;
-//	xil_printf("Zynq FIQ interrupt test initializing...\r\n");
-//	status = setup_interrupts(XPAR_PS7_SCUGIC_0_DEVICE_ID, &gic);
-//	if( status != XST_SUCCESS ) {
-//		xil_printf("ERROR while setting up interrupts, aborting\r\n");
-//		return status;
-//	}
-//	xil_printf("Waiting for interrupt(s)...\r\n");
+//    xil_printf("Zynq FIQ interrupt test initializing...\r\n");
+//    status = setup_interrupts(XPAR_PS7_SCUGIC_0_DEVICE_ID, &gic);
+//    if( status != XST_SUCCESS ) {
+//        xil_printf("ERROR while setting up interrupts, aborting\r\n");
+//        return status;
+//    }
+//    xil_printf("Waiting for interrupt(s)...\r\n");
 
 
 
     drawChar(27);
-	drawChar('[');
-	drawChar('7');
-	drawChar('C');
+    drawChar('[');
+    drawChar('7');
+    drawChar('C');
 
     int x = 100;
-	int y = 100;
-	int width = 20;
-	int height = 10;
+    int y = 100;
+    int width = 20;
+    int height = 10;
 
-	while (1) {
+    while (1) {
 
-		// Rectangle drawing and movement
-		drawFullRect(x, y, x+width, y+height, 0);
-		u64 k = getKeyBoard();
-		if (!(k&0x0000000000000001)) {//Up arrow
-			y--;
-		}
-		if (!(k&0x0000000000000008)) {//Down arrow
-			y++;
-		}
-		if (!(k&0x0000000000000020)) {//Left arrow
-			x--;
-		}
-		if (!(k&0x0000000000000040)) {//Right arrow
-			x++;
-		}
-		drawFullRect(x, y, x+width, y+height, 1);
+        // Rectangle drawing and movement
+        drawFullRect(x, y, x+width, y+height, 0);
+        u64 k = getKeyBoard();
+        if (!(k&0x0000000000000001)) {//Up arrow
+            y--;
+        }
+        if (!(k&0x0000000000000008)) {//Down arrow
+            y++;
+        }
+        if (!(k&0x0000000000000020)) {//Left arrow
+            x--;
+        }
+        if (!(k&0x0000000000000040)) {//Right arrow
+            x++;
+        }
+        drawFullRect(x, y, x+width, y+height, 1);
 
-		// Char FIFO to uart
-		u32 c = getChar();
-		while (!(c&0x100)) {
-			outbyte(c&0xFF);
-			if(c == 13) {
-				drawChar(10);
-				drawChar(13);
-				drawChar(27);
-				drawChar('[');
-				drawChar('7');
-				drawChar('C');
-			} else {
-				drawChar(c);
-			}
-			c = getChar();
-		}
-//
-//		if(FiqFlag) {
-//			xil_printf("Received interrupt %d\r\n", CapturedInterrupt);
-//			FiqFlag = FALSE; CapturedInterrupt = 0;
-//		}
+        // Char FIFO to uart
+        u32 c = getChar();
+        while (!(c&0x100)) {
+            outbyte(c&0xFF);
+            if(c == 13) {
+                drawChar(10);
+                drawChar(13);
+                drawChar(27);
+                drawChar('[');
+                drawChar('7');
+                drawChar('C');
+            } else {
+                drawChar(c);
+            }
+            c = getChar();
+        }
 
-		// Active sleeping
-		usleep(10000);
-	}
+//        if(FiqFlag) {
+//            xil_printf("Received interrupt %d\r\n", CapturedInterrupt);
+//            FiqFlag = FALSE; CapturedInterrupt = 0;
+//        }
+
+        // Active sleeping
+        usleep(10000);
+    }
 
 
     cleanup_platform();
@@ -215,68 +177,59 @@ int main() {
 }
 
 
-
-
-
-
-
-
-
-
-
 int setup_interrupts(u16 DeviceId, XScuGic *pXScuGic)
 {
-	int status; u32 reg;
-	static XScuGic_Config *gicConfig = NULL;
+    int status; u32 reg;
+    static XScuGic_Config *gicConfig = NULL;
 
-	// get pointer to GIC config
-	gicConfig = XScuGic_LookupConfig(DeviceId);
-	if( !gicConfig ) return XST_FAILURE;
+    // get pointer to GIC config
+    gicConfig = XScuGic_LookupConfig(DeviceId);
+    if( !gicConfig ) return XST_FAILURE;
 
-	// initialize GIC
-	status = XScuGic_CfgInitialize(pXScuGic, gicConfig, gicConfig->CpuBaseAddress);
-	if (status != XST_SUCCESS) return XST_FAILURE;
+    // initialize GIC
+    status = XScuGic_CfgInitialize(pXScuGic, gicConfig, gicConfig->CpuBaseAddress);
+    if (status != XST_SUCCESS) return XST_FAILURE;
 
-	// Write ICCICR=0x09 ==> XScuGic_CfgInitialize() calls CPUInitialize() which
-	// sets ICCICR to 0x07 which tells cpu to signal FIQ interrupt via normal IRQ ==> not what we want
-	// so setting bit 3 here (FIQEn, see Zynq 7000 TRM Appendix B mpcore section on ICCICR)
-	// to allow FIQ interrupt
-	reg = XScuGic_CPUReadReg(pXScuGic, XSCUGIC_CONTROL_OFFSET);
-	reg = reg | 0x8; // set bit 3
-	xil_printf("Writing 0x%04x to ICCRICR\r\n", reg);
-	XScuGic_CPUWriteReg(pXScuGic, XSCUGIC_CONTROL_OFFSET, reg);
+    // Write ICCICR=0x09 ==> XScuGic_CfgInitialize() calls CPUInitialize() which
+    // sets ICCICR to 0x07 which tells cpu to signal FIQ interrupt via normal IRQ ==> not what we want
+    // so setting bit 3 here (FIQEn, see Zynq 7000 TRM Appendix B mpcore section on ICCICR)
+    // to allow FIQ interrupt
+    reg = XScuGic_CPUReadReg(pXScuGic, XSCUGIC_CONTROL_OFFSET);
+    reg = reg | 0x8; // set bit 3
+    xil_printf("Writing 0x%04x to ICCRICR\r\n", reg);
+    XScuGic_CPUWriteReg(pXScuGic, XSCUGIC_CONTROL_OFFSET, reg);
 
-	// GIC self-test
-	status = XScuGic_SelfTest(pXScuGic);
-	if (status != XST_SUCCESS) return XST_FAILURE;
+    // GIC self-test
+    status = XScuGic_SelfTest(pXScuGic);
+    if (status != XST_SUCCESS) return XST_FAILURE;
 
-	// register fiq handler
-	Xil_ExceptionRegisterHandler(XIL_EXCEPTION_ID_FIQ_INT, (Xil_ExceptionHandler)fiq, pXScuGic);
+    // register fiq handler
+    Xil_ExceptionRegisterHandler(XIL_EXCEPTION_ID_FIQ_INT, (Xil_ExceptionHandler)fiq, pXScuGic);
 
-	// enable interrupts
-	Xil_ExceptionEnableMask(XIL_EXCEPTION_FIQ);
+    // enable interrupts
+    Xil_ExceptionEnableMask(XIL_EXCEPTION_FIQ);
 
-	// set trigger to rising edge (0b11), priority = 0x0 = highest priority
-	XScuGic_SetPriorityTriggerType(pXScuGic, PL_INTERRUPT_ID, 0x0, 0b11);
-	XScuGic_Enable(&gic, PL_INTERRUPT_ID);
+    // set trigger to rising edge (0b11), priority = 0x0 = highest priority
+    XScuGic_SetPriorityTriggerType(pXScuGic, PL_INTERRUPT_ID, 0x0, 0b11);
+    XScuGic_Enable(&gic, PL_INTERRUPT_ID);
 
-	return XST_SUCCESS;
+    return XST_SUCCESS;
 }
 
 void fiq(XScuGic *pXScuGic)
 {
-	u32 IntIDFull, IntID;
-	if( !pXScuGic ) return;
+    u32 IntIDFull, IntID;
+    if( !pXScuGic ) return;
 
-	IntIDFull = XScuGic_CPUReadReg(pXScuGic, XSCUGIC_INT_ACK_OFFSET);
-	IntID = IntIDFull & XSCUGIC_ACK_INTID_MASK;
+    IntIDFull = XScuGic_CPUReadReg(pXScuGic, XSCUGIC_INT_ACK_OFFSET);
+    IntID = IntIDFull & XSCUGIC_ACK_INTID_MASK;
 
-	// capture interrupt # and signal main loop that FIQ was handled
-	CapturedInterrupt = IntID;
-	FiqFlag = TRUE;
+    // capture interrupt # and signal main loop that FIQ was handled
+    CapturedInterrupt = IntID;
+    FiqFlag = TRUE;
 
-	// if valid interrupt, set EOI bit
-	if( IntID <= XSCUGIC_MAX_NUM_INTR_INPUTS ) {
-		XScuGic_CPUWriteReg(pXScuGic, XSCUGIC_EOI_OFFSET, IntIDFull);
-	}
+    // if valid interrupt, set EOI bit
+    if( IntID <= XSCUGIC_MAX_NUM_INTR_INPUTS ) {
+        XScuGic_CPUWriteReg(pXScuGic, XSCUGIC_EOI_OFFSET, IntIDFull);
+    }
 }
