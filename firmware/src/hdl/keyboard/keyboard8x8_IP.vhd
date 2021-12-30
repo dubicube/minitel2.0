@@ -25,11 +25,15 @@ entity keyboard8x8_IP is
         C_FIFO_DEPTH : integer := 8
     );
     port (
-        -- Keyboard connection
-        OUTPUTK : out std_logic_vector(7 downto 0);
-        INPUTK  : in  std_logic_vector(7 downto 0);
+        -- Raw key data input
+        KEY_UPDATE : in std_logic;
+        KEY_REG    : in std_logic_vector(63 downto 0);
 
-        -- Char output
+        -- Char input
+        CHAR_VALID : in std_logic;
+        CHAR_DATA  : in std_logic_vector(7 downto 0);
+
+        -- Interruption to PS
         FIFO_ITR : out std_logic;
 
         -- Register interface through BRAM interface
@@ -54,32 +58,6 @@ architecture arch_imp of keyboard8x8_IP is
     ATTRIBUTE X_INTERFACE_INFO of REG_ADDR : SIGNAL is "xilinx.com:interface:bram:1.0 REG_BRAM ADDR";
     ATTRIBUTE X_INTERFACE_INFO of REG_CLK  : SIGNAL is "xilinx.com:interface:bram:1.0 REG_BRAM CLK";
     ATTRIBUTE X_INTERFACE_INFO of REG_RST  : SIGNAL is "xilinx.com:interface:bram:1.0 REG_BRAM RST";
-
-
-    component keyboard8x8
-    port (
-        CLK        : in  std_logic;
-        KEY_UPDATE : out std_logic;
-        KEY_REG    : out std_logic_vector(63 downto 0);
-        OUTPUTK    : out std_logic_vector(7 downto 0);
-        INPUTK     : in  std_logic_vector(7 downto 0)
-    );
-    end component keyboard8x8;
-    signal KEY_UPDATE : std_logic;
-    signal KEY_REG : std_logic_vector(63 downto 0);
-
-    component ascii_converter
-    port (
-        CLK        : in  std_logic;
-        KEY_UPDATE : in  std_logic;
-        KEY_REG    : in  std_logic_vector(63 downto 0);
-        CHAR_VALID : out std_logic;
-        CHAR_DATA  : out std_logic_vector(7 downto 0)
-    );
-    end component ascii_converter;
-    signal CHAR_VALID : std_logic;
-    signal CHAR_DATA  : std_logic_vector(7 downto 0);
-
 
     type t_MEMORY_8 is array (0 to C_FIFO_DEPTH-1) of std_logic_vector(7 downto 0);
     signal s_char_fifo  : t_MEMORY_8;
@@ -111,24 +89,6 @@ begin
             end if;
         end if;
     end process;
-
-    keyboard8x8_i : keyboard8x8
-    port map (
-        CLK        => REG_CLK,
-        KEY_UPDATE => KEY_UPDATE,
-        KEY_REG    => KEY_REG,
-        OUTPUTK    => OUTPUTK,
-        INPUTK     => INPUTK
-    );
-
-    ascii_converter_i : ascii_converter
-    port map (
-        CLK        => REG_CLK,
-        KEY_UPDATE => KEY_UPDATE,
-        KEY_REG    => KEY_REG,
-        CHAR_VALID => CHAR_VALID,
-        CHAR_DATA  => CHAR_DATA
-    );
 
     --|=======================================================================|--
     --| Char FIFO
