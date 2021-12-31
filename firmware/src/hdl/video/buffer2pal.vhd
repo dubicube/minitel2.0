@@ -87,7 +87,13 @@ begin
       end if;
    end process;
 
-   VIDEO_DATA <= s_VIDEO_DATA and OE_VIDEO;
+
+   NORMAL_DATA: if (g_INVERT_DATA = '0') generate
+      VIDEO_DATA <= s_VIDEO_DATA and OE_VIDEO;
+   end generate NORMAL_DATA;
+   INVERTED_DATA: if (g_INVERT_DATA = '1') generate
+      VIDEO_DATA <= not (s_VIDEO_DATA and OE_VIDEO);
+   end generate INVERTED_DATA;
 
    BUFFER_CLK  <= CLK;
    BUFFER_RST  <= '0';
@@ -106,11 +112,7 @@ begin
             BUFFER_EN <= '0';
          end if;
          if (POSX(1 downto 0) = "10") then
-            if (g_INVERT_DATA = '0') then
-               s_VIDEO_DATA <= BUFFER_DIN(to_integer(unsigned(POSY(4 downto 0))));
-            else
-               s_VIDEO_DATA <= not BUFFER_DIN(to_integer(unsigned(POSY(4 downto 0))));
-            end if;
+            s_VIDEO_DATA <= BUFFER_DIN(to_integer(unsigned(POSY(4 downto 0))));
          end if;
       end if;
    end process;
