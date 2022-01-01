@@ -118,32 +118,32 @@ begin
     -- UART RECEIVER PARITY GENERATOR AND CHECK
     -- -------------------------------------------------------------------------
 
-    uart_rx_parity_g : if (PARITY_BIT /= "none") generate
-        uart_rx_parity_gen_i: entity work.UART_PARITY
-        generic map (
-            DATA_WIDTH  => 8,
-            PARITY_TYPE => PARITY_BIT
-        )
-        port map (
-            DATA_IN     => rx_data,
-            PARITY_OUT  => rx_parity_bit
-        );
+    -- uart_rx_parity_g : if (PARITY_BIT /= "none") generate
+    --     uart_rx_parity_gen_i: entity work.UART_PARITY
+    --     generic map (
+    --         DATA_WIDTH  => 8,
+    --         PARITY_TYPE => PARITY_BIT
+    --     )
+    --     port map (
+    --         DATA_IN     => rx_data,
+    --         PARITY_OUT  => rx_parity_bit
+    --     );
+    --
+    --     uart_rx_parity_check_reg : process (CLK)
+    --     begin
+    --         if (rising_edge(CLK)) then
+    --             if (RST = '1') then
+    --                 rx_parity_error <= '0';
+    --             elsif (rx_parity_check_en = '1') then
+    --                 rx_parity_error <= rx_parity_bit XOR UART_RXD;
+    --             end if;
+    --         end if;
+    --     end process;
+    -- end generate;
 
-        uart_rx_parity_check_reg : process (CLK)
-        begin
-            if (rising_edge(CLK)) then
-                if (RST = '1') then
-                    rx_parity_error <= '0';
-                elsif (rx_parity_check_en = '1') then
-                    rx_parity_error <= rx_parity_bit XOR UART_RXD;
-                end if;
-            end if;
-        end process;
-    end generate;
-
-    uart_rx_noparity_g : if (PARITY_BIT = "none") generate
-        rx_parity_error <= '0';
-    end generate;
+    -- uart_rx_noparity_g : if (PARITY_BIT = "none") generate
+    -- end generate;
+    rx_parity_error <= '0';
 
     -- -------------------------------------------------------------------------
     -- UART RECEIVER OUTPUT REGISTER

@@ -116,21 +116,21 @@ begin
     -- UART TRANSMITTER PARITY GENERATOR
     -- -------------------------------------------------------------------------
 
-    uart_tx_parity_g : if (PARITY_BIT /= "none") generate
-        uart_tx_parity_gen_i: entity work.UART_PARITY
-        generic map (
-            DATA_WIDTH  => 8,
-            PARITY_TYPE => PARITY_BIT
-        )
-        port map (
-            DATA_IN     => tx_data,
-            PARITY_OUT  => tx_parity_bit
-        );
-    end generate;
-
-    uart_tx_noparity_g : if (PARITY_BIT = "none") generate
-        tx_parity_bit <= 'Z';
-    end generate;
+    -- uart_tx_parity_g : if (PARITY_BIT /= "none") generate
+    --     uart_tx_parity_gen_i: entity work.UART_PARITY
+    --     generic map (
+    --         DATA_WIDTH  => 8,
+    --         PARITY_TYPE => PARITY_BIT
+    --     )
+    --     port map (
+    --         DATA_IN     => tx_data,
+    --         PARITY_OUT  => tx_parity_bit
+    --     );
+    -- end generate;
+    --
+    -- uart_tx_noparity_g : if (PARITY_BIT = "none") generate
+    -- end generate;
+    tx_parity_bit <= 'Z';
 
     -- -------------------------------------------------------------------------
     -- UART TRANSMITTER OUTPUT DATA REGISTER
